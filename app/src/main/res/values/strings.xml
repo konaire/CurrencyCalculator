@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Currency Calculator</string>
+
+    <string name="no_data">The list is empty</string>
+    <string name="network_error">Something went wrong</string>
+</resources>
