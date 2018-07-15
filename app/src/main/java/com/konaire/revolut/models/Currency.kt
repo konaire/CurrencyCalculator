@@ -1,19 +1,67 @@
 package com.konaire.revolut.models
 
+import com.konaire.revolut.R
 import com.konaire.revolut.ui.list.ListItemType
 import com.konaire.revolut.ui.list.ViewType
 
 /**
  * Created by Evgeny Eliseyev on 24/04/2018.
  */
-open class Currency(
+enum class CurrencyInfo(
+    val descriptionRes: Int = 0,
+    val flag: String = ""
+) {
+    AUD(R.string.currency_description_aud, "🇦🇺"),
+    BGN(R.string.currency_description_bgn, "🇧🇬"),
+    BRL(R.string.currency_description_brl, "🇧🇷"),
+    CAD(R.string.currency_description_cad, "🇨🇦"),
+    CHF(R.string.currency_description_chf, "🇨🇭"),
+    CNY(R.string.currency_description_cny, "🇨🇳"),
+    CZK(R.string.currency_description_czk, "🇨🇿"),
+    DKK(R.string.currency_description_dkk, "🇩🇰"),
+    EUR(R.string.currency_description_eur, "🇪🇺"),
+    GBP(R.string.currency_description_gbp, "🇬🇧"),
+    HKD(R.string.currency_description_hkd, "🇭🇰"),
+    HRK(R.string.currency_description_hrk, "🇭🇷"),
+    HUF(R.string.currency_description_huf, "🇭🇺"),
+    IDR(R.string.currency_description_idr, "🇮🇩"),
+    ILS(R.string.currency_description_ils, "🇮🇱"),
+    INR(R.string.currency_description_inr, "🇮🇳"),
+    ISK(R.string.currency_description_isk, "🇮🇸"),
+    JPY(R.string.currency_description_jpy, "🇯🇵"),
+    KRW(R.string.currency_description_krw, "🇰🇷"),
+    MXN(R.string.currency_description_mxn, "🇲🇽"),
+    MYR(R.string.currency_description_myr, "🇲🇾"),
+    NOK(R.string.currency_description_nok, "🇳🇴"),
+    NZD(R.string.currency_description_nzd, "🇳🇿"),
+    PHP(R.string.currency_description_php, "🇵🇭"),
+    PLN(R.string.currency_description_pln, "🇵🇱"),
+    RON(R.string.currency_description_ron, "🇷🇴"),
+    RUB(R.string.currency_description_rub, "🇷🇺"),
+    SEK(R.string.currency_description_sek, "🇸🇪"),
+    SGD(R.string.currency_description_sgd, "🇸🇬"),
+    THB(R.string.currency_description_thb, "🇹🇭"),
+    TRY(R.string.currency_description_try, "🇹🇷"),
+    USD(R.string.currency_description_usd, "🇺🇸"),
+    ZAR(R.string.currency_description_zar, "🇿🇦"),
+    UNKNOWN(R.string.currency_description_unknown, "🤔");
+}
+
+data class Currency(
     val name: String = "",
-    val rate: Float = 0F
+    val rate: Float = 1F
 ): ViewType {
+    val currencyInfo: CurrencyInfo
+        get() = try {
+            CurrencyInfo.valueOf(name)
+        } catch (e: Exception) {
+            CurrencyInfo.UNKNOWN
+        }
+
     override fun getViewType(): Int = ListItemType.CURRENCY.ordinal
 }
 
 data class CurrencyResponse(
-    val base: String = "",
-    val rates: MutableList<Currency> = ArrayList()
+    val base: Currency = Currency(),
+    val currencies: MutableList<Currency> = ArrayList()
 )

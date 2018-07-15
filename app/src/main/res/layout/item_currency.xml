@@ -8,9 +8,45 @@
     android:padding="@dimen/default_indent">
 
     <TextView
+        android:id="@+id/flag"
+        style="@style/ItemText"
+        android:layout_width="wrap_content"
+        android:textSize="@dimen/very_big_text_size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
         android:id="@+id/name"
         style="@style/ItemText"
-        android:fontFamily="sans-serif-medium"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="@dimen/default_indent"
+        app:layout_constraintBottom_toTopOf="@+id/description"
+        app:layout_constraintEnd_toStartOf="@+id/value"
+        app:layout_constraintStart_toEndOf="@+id/flag"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/description"
+        style="@style/ItemText"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="@dimen/small_text_size"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/name"
+        app:layout_constraintStart_toStartOf="@+id/name"
+        app:layout_constraintTop_toBottomOf="@+id/name" />
+
+    <EditText
+        android:id="@+id/value"
+        style="@style/ItemText"
+        android:layout_width="wrap_content"
+        android:hint="@string/currency_value_hint"
+        android:imeOptions="actionDone"
+        android:inputType="numberDecimal"
+        android:maxLength="15"
+        android:maxLines="1"
+        android:maxWidth="@dimen/currency_value_maxWidth"
+        android:textColorHint="@android:color/darker_gray"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/name"
         app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>

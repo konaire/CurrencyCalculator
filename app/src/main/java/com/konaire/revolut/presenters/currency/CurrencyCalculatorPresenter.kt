@@ -23,8 +23,11 @@ class CurrencyCalculatorPresenterImpl @Inject constructor(
         disposables.add(interactor.getLatestCurrencyRates(base)
             .doFinally { view.hideProgress() }
             .subscribe(
-                { response -> view.showData(ArrayList(response.rates)) },
-                { view.showMessage(R.string.network_error) }
+                { response ->
+                    val data = ArrayList(response.currencies)
+                    data.add(0, response.base)
+                    view.showData(data)
+                }, { view.showMessage(R.string.network_error) }
             )
         )
     }

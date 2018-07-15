@@ -3,8 +3,12 @@
     <dimen name="default_indent">16dp</dimen>
 
     <dimen name="divider_size">1dp</dimen>
-    <dimen name="progress_size">32dp</dimen>
 
+    <dimen name="very_big_text_size">36sp</dimen>
     <dimen name="big_text_size">18sp</dimen>
     <dimen name="default_text_size">16sp</dimen>
+    <dimen name="small_text_size">14sp</dimen>
+
+    <!-- Currency -->
+    <dimen name="currency_value_maxWidth">64dp</dimen>
 </resources>

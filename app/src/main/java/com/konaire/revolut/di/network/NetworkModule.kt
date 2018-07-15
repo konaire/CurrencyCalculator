@@ -1,9 +1,12 @@
 package com.konaire.revolut.di.network
 
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 
 import com.konaire.revolut.BuildConfig
+import com.konaire.revolut.models.CurrencyResponse
 import com.konaire.revolut.network.Api
+import com.konaire.revolut.network.deserializers.CurrencyResponseDeserializer
 import com.konaire.revolut.util.Constants
 
 import dagger.Module
@@ -46,11 +49,21 @@ class NetworkModule {
 
     @Singleton
     @Provides
+    fun provideGson(): Gson {
+        val builder = GsonBuilder()
+        builder.registerTypeAdapter(CurrencyResponse::class.java, CurrencyResponseDeserializer())
+
+        return builder.create()
+    }
+
+    @Singleton
+    @Provides
     fun provideRetrofit(
-        client: OkHttpClient
+        client: OkHttpClient,
+        gson: Gson
     ): Retrofit {
         val builder = Retrofit.Builder().client(client)
-        builder.addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
+        builder.addConverterFactory(GsonConverterFactory.create(gson))
         builder.addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
         builder.baseUrl(Constants.BASE_URL)
 

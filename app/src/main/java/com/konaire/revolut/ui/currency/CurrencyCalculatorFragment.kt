@@ -15,6 +15,7 @@ import com.konaire.revolut.ui.BaseFragment
 import com.konaire.revolut.ui.BaseListView
 import com.konaire.revolut.ui.list.DividerDecoration
 import com.konaire.revolut.ui.currency.adapters.CurrencyAdapter
+import com.konaire.revolut.util.hideKeyboard
 
 import dagger.android.support.AndroidSupportInjection
 
@@ -62,6 +63,11 @@ class CurrencyCalculatorFragment: BaseFragment(), CurrencyCalculatorView {
         list.adapter = adapter
         list.layoutManager = LinearLayoutManager(activity)
         list.addItemDecoration(DividerDecoration(activity!!))
+        list.setOnTouchListener { _, _ ->
+            activity?.hideKeyboard()
+            false
+        }
+
         swipe.setOnRefreshListener { presenter.getLatestCurrencyRates("EUR") }
         emptyView?.visibility = if (adapter!!.isNotEmpty()) View.GONE else View.VISIBLE
 

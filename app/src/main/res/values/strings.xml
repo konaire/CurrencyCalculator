@@ -4,4 +4,42 @@
 
     <string name="no_data">The list is empty</string>
     <string name="network_error">Something went wrong</string>
+
+    <!-- Currency -->
+    <string name="currency_description_aud">Australian Dollar</string>
+    <string name="currency_description_bgn">Bulgarian Lev</string>
+    <string name="currency_description_brl">Brazilian Real</string>
+    <string name="currency_description_cad">Canadian Dollar</string>
+    <string name="currency_description_chf">Swiss Franc</string>
+    <string name="currency_description_cny">Chinese Yuan Renminbi</string>
+    <string name="currency_description_czk">Czech Koruna</string>
+    <string name="currency_description_dkk">Danish Krone</string>
+    <string name="currency_description_eur">Euro</string>
+    <string name="currency_description_gbp">British Pound</string>
+    <string name="currency_description_hkd">Hong Kong Dollar</string>
+    <string name="currency_description_hrk">Croatian Kuna</string>
+    <string name="currency_description_huf">Hungarian Forint</string>
+    <string name="currency_description_idr">Indonesian Rupiah</string>
+    <string name="currency_description_ils">Israeli Shekel</string>
+    <string name="currency_description_inr">Indian Rupee</string>
+    <string name="currency_description_isk">Icelandic Krona</string>
+    <string name="currency_description_jpy">Japanese Yen</string>
+    <string name="currency_description_krw">South Korean Won</string>
+    <string name="currency_description_mxn">Mexican Peso</string>
+    <string name="currency_description_myr">Malaysian Ringgit</string>
+    <string name="currency_description_nok">Norwegian Krone</string>
+    <string name="currency_description_nzd">New Zealand Dollar</string>
+    <string name="currency_description_php">Philippine Piso</string>
+    <string name="currency_description_pln">Polish Zloty</string>
+    <string name="currency_description_ron">Romanian Leu</string>
+    <string name="currency_description_rub">Russian Ruble</string>
+    <string name="currency_description_sek">Swedish Krona</string>
+    <string name="currency_description_sgd">Singapore Dollar</string>
+    <string name="currency_description_thb">Thai Baht</string>
+    <string name="currency_description_try">Turkish Lira</string>
+    <string name="currency_description_usd">US Dollar</string>
+    <string name="currency_description_zar">South African Rand</string>
+    <string name="currency_description_unknown">Unknown Currency</string>
+
+    <string name="currency_value_hint">0.0</string>
 </resources>

@@ -3,6 +3,7 @@ package com.konaire.revolut.ui.currency
 import android.content.Intent
 import android.support.test.InstrumentationRegistry
 import android.support.test.espresso.Espresso.*
+import android.support.test.espresso.assertion.ViewAssertions.*
 import android.support.test.espresso.matcher.ViewMatchers.*
 import android.support.test.rule.ActivityTestRule
 import android.support.test.runner.AndroidJUnit4
@@ -16,6 +17,8 @@ import com.konaire.revolut.models.CurrencyResponse
 import com.konaire.revolut.network.Api
 
 import io.reactivex.Single
+
+import org.hamcrest.Matchers.*
 
 import org.junit.Before
 import org.junit.Rule
@@ -42,14 +45,24 @@ class CurrencyActivityTest {
     }
 
     @Test
-    fun checkWhenEverythingIsFine() {
-        val networkResult = CurrencyResponse("", listOf(
+    fun checkWhenEverythingIsFineAndThatBaseIsAlsoIncluded() {
+        val networkResult = CurrencyResponse(Currency(), listOf(
             Currency(), Currency(), Currency(), Currency(), Currency(), Currency()
         ).toMutableList())
 
         mockNetwork(networkResult)
         activityRule.launchActivity(Intent())
-        onView(withId(R.id.list)).check(RecyclerViewItemCountAssertion.withItemCount(6))
+        onView(withId(R.id.emptyView)).check(matches(not(isDisplayed())))
+        onView(withId(R.id.list)).check(RecyclerViewItemCountAssertion.withItemCount(7))
+    }
+
+    @Test
+    fun checkWhenNetworkCrashes() {
+        `when`(api.getLatestCurrencyRates(anyString())).thenReturn(Single.error(Exception()))
+
+        activityRule.launchActivity(Intent())
+        onView(withId(R.id.emptyView)).check(matches(isDisplayed()))
+        onView(withId(R.id.list)).check(RecyclerViewItemCountAssertion.withItemCount(0))
     }
 
     private fun mockNetwork(response: CurrencyResponse) {

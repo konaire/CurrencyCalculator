@@ -23,8 +23,13 @@ class CurrencyDelegateAdapter(
         private val listener: OnItemClickedListener<Currency>
     ): RecyclerView.ViewHolder(rootView) {
         fun bind(currency: Currency)  = with(itemView) {
+            val flag = findViewById<TextView>(R.id.flag)
             val name = findViewById<TextView>(R.id.name)
+            val description = findViewById<TextView>(R.id.description)
+
+            flag.text = currency.currencyInfo.flag
             name.text = currency.name
+            description.text = context.getString(currency.currencyInfo.descriptionRes)
 
             setOnClickListener { listener.onItemClicked(currency, this) }
         }
