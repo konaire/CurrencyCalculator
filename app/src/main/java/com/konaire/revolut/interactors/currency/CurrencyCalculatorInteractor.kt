@@ -7,6 +7,7 @@ import io.reactivex.Scheduler
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 
+import java.util.Collections
 import javax.inject.Inject
 
 /**
@@ -21,5 +22,9 @@ interface CurrencyCalculatorInteractor {
 class CurrencyCalculatorInteractorImpl @Inject constructor(
     private val api: Api
 ): CurrencyCalculatorInteractor {
-    override fun getLatestCurrencyRates(base: String, uiScheduler: Scheduler): Single<CurrencyResponse> = api.getLatestCurrencyRates(base).observeOn(uiScheduler)
+    override fun getLatestCurrencyRates(base: String, uiScheduler: Scheduler): Single<CurrencyResponse> =
+        api.getLatestCurrencyRates(base).map { response ->
+            Collections.sort(response.currencies, compareBy { it.name })
+            response
+        }.observeOn(uiScheduler)
 }

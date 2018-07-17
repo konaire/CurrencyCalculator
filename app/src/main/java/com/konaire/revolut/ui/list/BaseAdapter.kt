@@ -31,4 +31,6 @@ abstract class BaseAdapter<T>(
     fun isEmpty() = itemCount == 0
 
     fun isNotEmpty() = itemCount > 0
+
+    protected fun indexOf(item: T) = items.indexOf(item)
 }

@@ -3,7 +3,6 @@ package com.konaire.revolut.ui.currency
 import android.content.Context
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +14,7 @@ import com.konaire.revolut.ui.BaseFragment
 import com.konaire.revolut.ui.BaseListView
 import com.konaire.revolut.ui.list.DividerDecoration
 import com.konaire.revolut.ui.currency.adapters.CurrencyAdapter
+import com.konaire.revolut.util.OnValueChangedListener
 import com.konaire.revolut.util.hideKeyboard
 
 import dagger.android.support.AndroidSupportInjection
@@ -26,7 +26,7 @@ import javax.inject.Inject
 /**
  * Created by Evgeny Eliseyev on 23/04/2018.
  */
-interface CurrencyCalculatorView: BaseListView<Currency>
+interface CurrencyCalculatorView: BaseListView<Currency>, OnValueChangedListener<Currency>
 
 class CurrencyCalculatorFragment: BaseFragment(), CurrencyCalculatorView {
     @Inject lateinit var presenter: CurrencyCalculatorPresenter
@@ -57,7 +57,7 @@ class CurrencyCalculatorFragment: BaseFragment(), CurrencyCalculatorView {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         if (adapter == null) {
-            adapter = CurrencyAdapter(this)
+            adapter = CurrencyAdapter(this, this)
         }
 
         list.adapter = adapter
@@ -74,8 +74,8 @@ class CurrencyCalculatorFragment: BaseFragment(), CurrencyCalculatorView {
         presenter.getLatestCurrencyRates("EUR")
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onStop() {
+        super.onStop()
         presenter.stopSubscriptions()
     }
 
@@ -95,7 +95,9 @@ class CurrencyCalculatorFragment: BaseFragment(), CurrencyCalculatorView {
 
     override fun showData(data: MutableList<Currency>) {
         if (data.isNotEmpty()) {
+            adapter?.baseCurrency = data[0]
             adapter?.reinit(data)
+
             emptyView?.visibility = View.GONE
         } else {
             emptyView?.visibility = View.VISIBLE
@@ -103,6 +105,11 @@ class CurrencyCalculatorFragment: BaseFragment(), CurrencyCalculatorView {
     }
 
     override fun onItemClicked(item: Currency, view: View?) {
-        Log.i(TAG, "Click")
+        adapter?.baseCurrency = item
+    }
+
+    override fun onValueChanged(value: Currency) {
+        adapter?.baseCurrency = value
+        adapter?.notifyAllItemsExcept(value)
     }
 }

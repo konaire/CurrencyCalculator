@@ -10,5 +10,5 @@
     <dimen name="small_text_size">14sp</dimen>
 
     <!-- Currency -->
-    <dimen name="currency_value_maxWidth">64dp</dimen>
+    <dimen name="currency_value_maxWidth">72dp</dimen>
 </resources>
