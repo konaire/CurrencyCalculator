@@ -6,5 +6,8 @@ package com.konaire.revolut.util
 class Constants {
     companion object {
         const val BASE_URL = "https://revolut.duckdns.org"
+
+        const val PREFERENCES_NAME = "revolut_preferences"
+        const val PREFERENCE_LAST_BASE_CURRENCY = "preference_last_base_currency"
     }
 }

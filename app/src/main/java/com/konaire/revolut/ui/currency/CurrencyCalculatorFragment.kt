@@ -3,6 +3,7 @@ package com.konaire.revolut.ui.currency
 import android.content.Context
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.SimpleItemAnimator
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +15,6 @@ import com.konaire.revolut.ui.BaseFragment
 import com.konaire.revolut.ui.BaseListView
 import com.konaire.revolut.ui.list.DividerDecoration
 import com.konaire.revolut.ui.currency.adapters.CurrencyAdapter
-import com.konaire.revolut.util.OnValueChangedListener
 import com.konaire.revolut.util.hideKeyboard
 
 import dagger.android.support.AndroidSupportInjection
@@ -26,7 +26,7 @@ import javax.inject.Inject
 /**
  * Created by Evgeny Eliseyev on 23/04/2018.
  */
-interface CurrencyCalculatorView: BaseListView<Currency>, OnValueChangedListener<Currency>
+interface CurrencyCalculatorView: BaseListView<Currency>
 
 class CurrencyCalculatorFragment: BaseFragment(), CurrencyCalculatorView {
     @Inject lateinit var presenter: CurrencyCalculatorPresenter
@@ -57,7 +57,13 @@ class CurrencyCalculatorFragment: BaseFragment(), CurrencyCalculatorView {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         if (adapter == null) {
-            adapter = CurrencyAdapter(this, this)
+            adapter = CurrencyAdapter(this)
+        }
+
+        val itemAnimator = list.itemAnimator
+        if (itemAnimator is SimpleItemAnimator) {
+            itemAnimator.supportsChangeAnimations = false
+
         }
 
         list.adapter = adapter
@@ -68,13 +74,13 @@ class CurrencyCalculatorFragment: BaseFragment(), CurrencyCalculatorView {
             false
         }
 
-        swipe.setOnRefreshListener { presenter.getLatestCurrencyRates("EUR") }
+        swipe.setOnRefreshListener { presenter.getLatestCurrencyRates() }
         emptyView?.visibility = if (adapter!!.isNotEmpty()) View.GONE else View.VISIBLE
     }
 
     override fun onStart() {
         super.onStart()
-        presenter.getLatestCurrencyRates("EUR")
+        presenter.getLatestCurrencyRates()
     }
 
     override fun onStop() {
@@ -100,6 +106,8 @@ class CurrencyCalculatorFragment: BaseFragment(), CurrencyCalculatorView {
         if (data.isNotEmpty()) {
             if (adapter?.baseCurrency == null) {
                 adapter?.baseCurrency = data[0]
+            } else if (adapter?.getFirstItem()?.name != data[0].name) {
+                list.scrollToPosition(0)
             }
 
             adapter?.updateRates(data)
@@ -110,11 +118,10 @@ class CurrencyCalculatorFragment: BaseFragment(), CurrencyCalculatorView {
     }
 
     override fun onItemClicked(item: Currency, view: View?) {
-        adapter?.baseCurrency = item
-    }
+        presenter.stopUpdatingCurrencyRates()
+        adapter?.updateBaseCurrency(item)
+        activity?.hideKeyboard()
 
-    override fun onValueChanged(value: Currency) {
-        adapter?.baseCurrency = value
-        adapter?.notifyAllItemsExcept(value)
+        presenter.setLastBaseCurrency(item.name)
     }
 }

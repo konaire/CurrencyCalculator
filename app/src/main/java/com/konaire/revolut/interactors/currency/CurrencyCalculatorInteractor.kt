@@ -3,6 +3,8 @@ package com.konaire.revolut.interactors.currency
 import com.konaire.revolut.models.CurrencyResponse
 import com.konaire.revolut.network.Api
 import com.konaire.revolut.util.Config
+import com.konaire.revolut.util.Constants
+import com.konaire.revolut.util.PreferenceManager
 
 import io.reactivex.Scheduler
 import io.reactivex.Flowable
@@ -17,15 +19,19 @@ import javax.inject.Inject
  */
 interface CurrencyCalculatorInteractor {
     fun getLatestCurrencyRates(
-        base: String, uiScheduler: Scheduler = AndroidSchedulers.mainThread()
+        uiScheduler: Scheduler = AndroidSchedulers.mainThread()
     ): Flowable<CurrencyResponse>
+
+    fun setLastBaseCurrency(currency: String)
 }
 
 class CurrencyCalculatorInteractorImpl @Inject constructor(
     private val api: Api,
-    private val config: Config
+    private val config: Config,
+    private val preferenceManager: PreferenceManager
 ): CurrencyCalculatorInteractor {
-    override fun getLatestCurrencyRates(base: String, uiScheduler: Scheduler): Flowable<CurrencyResponse> {
+    override fun getLatestCurrencyRates(uiScheduler: Scheduler): Flowable<CurrencyResponse> {
+        val base = preferenceManager.getString(Constants.PREFERENCE_LAST_BASE_CURRENCY, "EUR")
         var flowable = api.getLatestCurrencyRates(base)
         if (config.useAutoUpdate) {
             flowable =
@@ -39,4 +45,7 @@ class CurrencyCalculatorInteractorImpl @Inject constructor(
             response
         }.observeOn(uiScheduler)
     }
+
+    override fun setLastBaseCurrency(currency: String) =
+        preferenceManager.setString(Constants.PREFERENCE_LAST_BASE_CURRENCY, currency)
 }

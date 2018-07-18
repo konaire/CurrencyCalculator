@@ -17,8 +17,7 @@ import java.util.concurrent.TimeUnit
  * Created by Evgeny Eliseyev on 24/04/2018.
  */
 class CurrencyAdapter(
-    clickListener: OnItemClickedListener<Currency>,
-    private val valueChangedListener: OnValueChangedListener<Currency>
+    clickListener: OnItemClickedListener<Currency>
 ): BaseAdapter<Currency>(clickListener), OnValueChangedListener<Currency> {
     private val subject: PublishSubject<Currency> = PublishSubject.create()
     var baseCurrency: Currency? = null
@@ -41,6 +40,8 @@ class CurrencyAdapter(
         subject.onNext(value)
     }
 
+    fun getFirstItem(): Currency = items[0]
+
     fun updateRates(data: MutableList<Currency>) {
         if (isEmpty()) {
             reinit(data)
@@ -48,7 +49,7 @@ class CurrencyAdapter(
         }
 
         var index = 0
-        while (index < data.size) {
+        while (index < items.size && index < data.size) {
             if (items[index].name == data[index].name) {
                 items[index].rate = data[index].rate
                 if (items[index] != baseCurrency) {
@@ -56,17 +57,45 @@ class CurrencyAdapter(
                 }
 
                 index++
+            } else if (index == 0 && data[index].name == baseCurrency?.name) { // base currency was updated
+                items[index] = data[index]
+                notifyItemChanged(index)
             } else if (items[index].name > data[index].name) { // data has a new currency
                 items.add(index, data[index])
                 notifyItemInserted(index)
-            } else { // data has no this currency
+            } else { // data has no such currency
                 items.removeAt(index)
                 notifyItemRemoved(index)
             }
         }
+
+        while (index < data.size) {
+            items.add(data[index])
+            notifyItemInserted(index)
+
+            index++
+        }
+
+        while (index < items.size) {
+            items.removeAt(index)
+            notifyItemRemoved(index)
+        }
     }
 
-    fun notifyAllItemsExcept(currency: Currency) {
+    fun updateBaseCurrency(currency: Currency) {
+        val index = items.indexOf(currency)
+        if (index <= 0) {
+            return
+        }
+
+        currency.rate = 1F
+        baseCurrency = currency
+        items.removeAt(index)
+
+        notifyItemRemoved(index)
+    }
+
+    private fun notifyAllItemsExcept(currency: Currency) {
         val firstIndex = 0
         val lastIndex = itemCount - 1
         val index = items.indexOf(currency)
@@ -86,6 +115,9 @@ class CurrencyAdapter(
     private fun subscribeToSubject() {
         subject.debounce(500, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { currency -> valueChangedListener.onValueChanged(currency) }
+            .subscribe { currency ->
+                baseCurrency = currency
+                notifyAllItemsExcept(currency)
+            }
     }
 }

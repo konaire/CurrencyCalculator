@@ -4,6 +4,7 @@ import com.konaire.revolut.models.Currency
 import com.konaire.revolut.models.CurrencyResponse
 import com.konaire.revolut.network.Api
 import com.konaire.revolut.util.Config
+import com.konaire.revolut.util.PreferenceManager
 
 import io.reactivex.Flowable
 import io.reactivex.schedulers.TestScheduler
@@ -26,6 +27,7 @@ import java.util.concurrent.TimeUnit
 class CurrencyCalculatorInteractorTest {
     @Mock private lateinit var api: Api
     @Mock private lateinit var config: Config
+    @Mock private lateinit var preferenceManager: PreferenceManager
 
     @InjectMocks private lateinit var scheduler: TestScheduler
     @InjectMocks private lateinit var interactor: CurrencyCalculatorInteractorImpl
@@ -36,9 +38,10 @@ class CurrencyCalculatorInteractorTest {
             Currency("A"), Currency("Z"), Currency("B"), Currency("R")
         ).toMutableList()
 
+        mockPreferences()
         mockNetwork(CurrencyResponse(Currency(), currencies))
         val subscriber = TestSubscriber.create<CurrencyResponse>()
-        interactor.getLatestCurrencyRates("", scheduler).subscribe(subscriber)
+        interactor.getLatestCurrencyRates(scheduler).subscribe(subscriber)
         scheduler.advanceTimeBy(2, TimeUnit.SECONDS)
         scheduler.triggerActions()
 
@@ -49,6 +52,10 @@ class CurrencyCalculatorInteractorTest {
             response.currencies[2].name == "R" &&
             response.currencies[3].name == "Z"
         }
+    }
+
+    private fun mockPreferences() {
+        `when`(preferenceManager.getString(anyString(), anyString())).thenReturn("")
     }
 
     private fun mockNetwork(response: CurrencyResponse) {

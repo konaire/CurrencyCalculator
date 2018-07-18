@@ -4,6 +4,7 @@ import android.content.Context
 
 import com.konaire.revolut.App
 import com.konaire.revolut.util.Config
+import com.konaire.revolut.util.PreferenceManager
 
 import dagger.Module
 import dagger.Provides
@@ -18,6 +19,10 @@ class AppModule {
     @Singleton
     @Provides
     fun provideContext(app: App): Context = app.applicationContext
+
+    @Singleton
+    @Provides
+    fun providePreferenceManager(context: Context): PreferenceManager = PreferenceManager(context)
 
     @Singleton
     @Provides

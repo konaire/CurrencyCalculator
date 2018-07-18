@@ -12,11 +12,7 @@ import android.widget.Toast
 fun Context.toast(message: CharSequence) = Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 
 fun Activity.hideKeyboard() {
+    val view = currentFocus ?: View(this)
     val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-    var view = currentFocus
-    if (view == null) {
-        view = View(this)
-    }
-
     inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
 }

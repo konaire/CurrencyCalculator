@@ -5,6 +5,7 @@ import android.content.Context
 import com.konaire.revolut.MockApp
 import com.konaire.revolut.network.Api
 import com.konaire.revolut.util.Config
+import com.konaire.revolut.util.PreferenceManager
 
 import dagger.Module
 import dagger.Provides
@@ -21,6 +22,10 @@ class MockAppModule {
     @Singleton
     @Provides
     fun provideContext(app: MockApp): Context = app.applicationContext
+
+    @Singleton
+    @Provides
+    fun providePreferenceManager(): PreferenceManager = Mockito.mock(PreferenceManager::class.java)
 
     @Singleton
     @Provides
