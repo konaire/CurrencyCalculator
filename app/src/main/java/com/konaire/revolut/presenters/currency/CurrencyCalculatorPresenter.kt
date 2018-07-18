@@ -20,6 +20,8 @@ class CurrencyCalculatorPresenterImpl @Inject constructor(
 ): CurrencyCalculatorPresenter() {
     override fun getLatestCurrencyRates(base: String) {
         view.showProgress()
+        disposables.clear()
+
         disposables.add(interactor.getLatestCurrencyRates(base)
             .doFinally { view.hideProgress() }
             .subscribe(
@@ -27,6 +29,7 @@ class CurrencyCalculatorPresenterImpl @Inject constructor(
                     val data = ArrayList(response.currencies)
                     data.add(0, response.base)
                     view.showData(data)
+                    view.hideProgress()
                 }, { view.showMessage(R.string.network_error) }
             )
         )

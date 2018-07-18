@@ -21,7 +21,7 @@ class CurrencyAdapter(
     private val valueChangedListener: OnValueChangedListener<Currency>
 ): BaseAdapter<Currency>(clickListener), OnValueChangedListener<Currency> {
     private val subject: PublishSubject<Currency> = PublishSubject.create()
-    lateinit var baseCurrency: Currency
+    var baseCurrency: Currency? = null
 
     init {
         delegateAdapters[ListItemType.CURRENCY.ordinal] = CurrencyDelegateAdapter(clickListener, this)
@@ -31,7 +31,7 @@ class CurrencyAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val adapter = delegateAdapters[getItemViewType(position)]
         if (adapter is CurrencyDelegateAdapter) {
-            adapter.baseCurrency = baseCurrency
+            adapter.baseCurrency = baseCurrency!!
         }
 
         super.onBindViewHolder(holder, position)
@@ -41,10 +41,35 @@ class CurrencyAdapter(
         subject.onNext(value)
     }
 
+    fun updateRates(data: MutableList<Currency>) {
+        if (isEmpty()) {
+            reinit(data)
+            return
+        }
+
+        var index = 0
+        while (index < data.size) {
+            if (items[index].name == data[index].name) {
+                items[index].rate = data[index].rate
+                if (items[index] != baseCurrency) {
+                    notifyItemChanged(index)
+                }
+
+                index++
+            } else if (items[index].name > data[index].name) { // data has a new currency
+                items.add(index, data[index])
+                notifyItemInserted(index)
+            } else { // data has no this currency
+                items.removeAt(index)
+                notifyItemRemoved(index)
+            }
+        }
+    }
+
     fun notifyAllItemsExcept(currency: Currency) {
         val firstIndex = 0
         val lastIndex = itemCount - 1
-        val index = indexOf(currency)
+        val index = items.indexOf(currency)
         if (index < firstIndex) {
             return
         }

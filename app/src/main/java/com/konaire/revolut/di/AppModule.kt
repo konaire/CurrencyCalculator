@@ -3,6 +3,7 @@ package com.konaire.revolut.di
 import android.content.Context
 
 import com.konaire.revolut.App
+import com.konaire.revolut.util.Config
 
 import dagger.Module
 import dagger.Provides
@@ -17,4 +18,8 @@ class AppModule {
     @Singleton
     @Provides
     fun provideContext(app: App): Context = app.applicationContext
+
+    @Singleton
+    @Provides
+    fun provideConfig(): Config = Config()
 }

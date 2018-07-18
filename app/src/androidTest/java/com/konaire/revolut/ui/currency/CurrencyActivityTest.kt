@@ -17,8 +17,9 @@ import com.konaire.revolut.espresso.ViewGroupChildAtMatcher
 import com.konaire.revolut.models.Currency
 import com.konaire.revolut.models.CurrencyResponse
 import com.konaire.revolut.network.Api
+import com.konaire.revolut.util.Config
 
-import io.reactivex.Single
+import io.reactivex.Flowable
 
 import org.hamcrest.Matchers.*
 
@@ -39,11 +40,13 @@ class CurrencyActivityTest {
     @Rule @JvmField val activityRule: ActivityTestRule<CurrencyActivity> = ActivityTestRule(CurrencyActivity::class.java, true, false)
 
     @Inject lateinit var api: Api
+    @Inject lateinit var config: Config
 
     @Before
     fun setUp() {
         val app = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as MockApp
         (app.component as DaggerMockAppComponent).inject(this)
+        config.useAutoUpdate = false
     }
 
     @Test
@@ -60,7 +63,7 @@ class CurrencyActivityTest {
 
     @Test
     fun checkWhenNetworkCrashes() {
-        `when`(api.getLatestCurrencyRates(anyString())).thenReturn(Single.error(Exception()))
+        `when`(api.getLatestCurrencyRates(anyString())).thenReturn(Flowable.error(Exception()))
 
         activityRule.launchActivity(Intent())
         onView(withId(R.id.emptyView)).check(matches(isDisplayed()))
@@ -90,10 +93,7 @@ class CurrencyActivityTest {
 
         mockNetwork(networkResult)
         activityRule.launchActivity(Intent())
-        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 0)))).perform(typeText("2"))
-        Thread.sleep(1000) // wait for debouncing
-
-        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 1)))).perform(clearText()).perform(typeText("2"))
+        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 1)))).perform(typeText("2"))
         Thread.sleep(1000) // wait for debouncing
 
         onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 0)))).check(matches(withText("1.00")))
@@ -106,7 +106,78 @@ class CurrencyActivityTest {
         onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 1)))).check(matches(withText("6.00")))
     }
 
+    @Test
+    fun checkThatRatesUpdateIfDataIsTheSame() {
+        val networkResult1 = CurrencyResponse(Currency("A", 1F), listOf(
+            Currency("B", 2F), Currency("C", 3F)
+        ).toMutableList())
+
+        val networkResult2 = CurrencyResponse(Currency("A", 1F), listOf(
+            Currency("B", 4F), Currency("C", 6F)
+        ).toMutableList())
+
+        mockNetwork(networkResult1, networkResult2)
+        activityRule.launchActivity(Intent())
+        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 0)))).perform(typeText("2"))
+        Thread.sleep(1000) // wait for debouncing
+
+        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 1)))).check(matches(withText("4.00")))
+        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 2)))).check(matches(withText("6.00")))
+
+        onView(withId(R.id.swipe)).perform(swipeDown())
+        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 1)))).check(matches(withText("8.00")))
+        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 2)))).check(matches(withText("12.00")))
+    }
+
+    @Test
+    fun checkThatRatesUpdateIfDataHasNewElement() {
+        val networkResult1 = CurrencyResponse(Currency("A", 1F), listOf(
+            Currency("C", 3F)
+        ).toMutableList())
+
+        val networkResult2 = CurrencyResponse(Currency("A", 1F), listOf(
+            Currency("B", 4F), Currency("C", 6F)
+        ).toMutableList())
+
+        mockNetwork(networkResult1, networkResult2)
+        activityRule.launchActivity(Intent())
+        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 0)))).perform(typeText("2"))
+        Thread.sleep(1000) // wait for debouncing
+
+        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 1)))).check(matches(withText("6.00")))
+
+        onView(withId(R.id.swipe)).perform(swipeDown())
+        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 1)))).check(matches(withText("8.00")))
+        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 2)))).check(matches(withText("12.00")))
+    }
+
+    @Test
+    fun checkThatRatesUpdateIfDataLacksOneElement() {
+        val networkResult1 = CurrencyResponse(Currency("A", 1F), listOf(
+            Currency("B", 2F), Currency("C", 3F)
+        ).toMutableList())
+
+        val networkResult2 = CurrencyResponse(Currency("A", 1F), listOf(
+            Currency("C", 6F)
+        ).toMutableList())
+
+        mockNetwork(networkResult1, networkResult2)
+        activityRule.launchActivity(Intent())
+        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 0)))).perform(typeText("2"))
+        Thread.sleep(1000) // wait for debouncing
+
+        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 1)))).check(matches(withText("4.00")))
+        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 2)))).check(matches(withText("6.00")))
+
+        onView(withId(R.id.swipe)).perform(swipeDown())
+        onView(allOf(withId(R.id.value), isDescendantOfA(ViewGroupChildAtMatcher.getChildAt(withId(R.id.list), 1)))).check(matches(withText("12.00")))
+    }
+
     private fun mockNetwork(response: CurrencyResponse) {
-        `when`(api.getLatestCurrencyRates(anyString())).thenReturn(Single.just(response))
+        `when`(api.getLatestCurrencyRates(anyString())).thenReturn(Flowable.just(response))
+    }
+
+    private fun mockNetwork(response1: CurrencyResponse, response2: CurrencyResponse) {
+        `when`(api.getLatestCurrencyRates(anyString())).thenReturn(Flowable.just(response1)).thenReturn(Flowable.just(response2))
     }
 }

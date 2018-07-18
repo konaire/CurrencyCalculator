@@ -11,7 +11,7 @@ abstract class BaseAdapter<T>(
     protected val listener: OnItemClickedListener<T>? = null
 ): RecyclerView.Adapter<RecyclerView.ViewHolder>() where T: ViewType {
     protected var delegateAdapters: MutableMap<Int, DelegateAdapter<T>> = ArrayMap()
-    private var items: MutableList<T> = ArrayList()
+    protected var items: MutableList<T> = ArrayList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
         delegateAdapters[viewType]!!.onCreateViewHolder(parent)
@@ -31,6 +31,4 @@ abstract class BaseAdapter<T>(
     fun isEmpty() = itemCount == 0
 
     fun isNotEmpty() = itemCount > 0
-
-    protected fun indexOf(item: T) = items.indexOf(item)
 }

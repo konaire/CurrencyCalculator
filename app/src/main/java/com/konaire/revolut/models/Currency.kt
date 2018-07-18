@@ -49,7 +49,7 @@ enum class CurrencyInfo(
 
 data class Currency(
     val name: String = "",
-    val rate: Float = 1F,
+    var rate: Float = 1F,
     var value: Float = -1F
 ): ViewType {
     val currencyInfo: CurrencyInfo

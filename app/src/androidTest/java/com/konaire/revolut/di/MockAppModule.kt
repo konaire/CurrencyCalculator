@@ -4,6 +4,7 @@ import android.content.Context
 
 import com.konaire.revolut.MockApp
 import com.konaire.revolut.network.Api
+import com.konaire.revolut.util.Config
 
 import dagger.Module
 import dagger.Provides
@@ -20,6 +21,10 @@ class MockAppModule {
     @Singleton
     @Provides
     fun provideContext(app: MockApp): Context = app.applicationContext
+
+    @Singleton
+    @Provides
+    fun provideConfig(): Config = Config()
 
     @Singleton
     @Provides

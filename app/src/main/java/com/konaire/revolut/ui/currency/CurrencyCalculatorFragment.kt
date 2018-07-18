@@ -70,7 +70,10 @@ class CurrencyCalculatorFragment: BaseFragment(), CurrencyCalculatorView {
 
         swipe.setOnRefreshListener { presenter.getLatestCurrencyRates("EUR") }
         emptyView?.visibility = if (adapter!!.isNotEmpty()) View.GONE else View.VISIBLE
+    }
 
+    override fun onStart() {
+        super.onStart()
         presenter.getLatestCurrencyRates("EUR")
     }
 
@@ -95,9 +98,11 @@ class CurrencyCalculatorFragment: BaseFragment(), CurrencyCalculatorView {
 
     override fun showData(data: MutableList<Currency>) {
         if (data.isNotEmpty()) {
-            adapter?.baseCurrency = data[0]
-            adapter?.reinit(data)
+            if (adapter?.baseCurrency == null) {
+                adapter?.baseCurrency = data[0]
+            }
 
+            adapter?.updateRates(data)
             emptyView?.visibility = View.GONE
         } else {
             emptyView?.visibility = View.VISIBLE

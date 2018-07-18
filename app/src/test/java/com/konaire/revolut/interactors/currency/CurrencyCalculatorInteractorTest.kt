@@ -3,8 +3,9 @@ package com.konaire.revolut.interactors.currency
 import com.konaire.revolut.models.Currency
 import com.konaire.revolut.models.CurrencyResponse
 import com.konaire.revolut.network.Api
+import com.konaire.revolut.util.Config
 
-import io.reactivex.Single
+import io.reactivex.Flowable
 import io.reactivex.schedulers.TestScheduler
 import io.reactivex.subscribers.TestSubscriber
 
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit
 @RunWith(MockitoJUnitRunner.Silent::class)
 class CurrencyCalculatorInteractorTest {
     @Mock private lateinit var api: Api
+    @Mock private lateinit var config: Config
 
     @InjectMocks private lateinit var scheduler: TestScheduler
     @InjectMocks private lateinit var interactor: CurrencyCalculatorInteractorImpl
@@ -36,7 +38,7 @@ class CurrencyCalculatorInteractorTest {
 
         mockNetwork(CurrencyResponse(Currency(), currencies))
         val subscriber = TestSubscriber.create<CurrencyResponse>()
-        interactor.getLatestCurrencyRates("", scheduler).toFlowable().subscribe(subscriber)
+        interactor.getLatestCurrencyRates("", scheduler).subscribe(subscriber)
         scheduler.advanceTimeBy(2, TimeUnit.SECONDS)
         scheduler.triggerActions()
 
@@ -50,6 +52,6 @@ class CurrencyCalculatorInteractorTest {
     }
 
     private fun mockNetwork(response: CurrencyResponse) {
-        `when`(api.getLatestCurrencyRates(anyString())).thenReturn(Single.just(response))
+        `when`(api.getLatestCurrencyRates(anyString())).thenReturn(Flowable.just(response))
     }
 }

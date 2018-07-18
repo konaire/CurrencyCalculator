@@ -2,7 +2,7 @@ package com.konaire.revolut.network
 
 import com.konaire.revolut.models.CurrencyResponse
 
-import io.reactivex.Single
+import io.reactivex.Flowable
 
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -14,5 +14,5 @@ interface Api {
     @GET("latest")
     fun getLatestCurrencyRates(
         @Query("base") base: String
-    ): Single<CurrencyResponse>
+    ): Flowable<CurrencyResponse>
 }
