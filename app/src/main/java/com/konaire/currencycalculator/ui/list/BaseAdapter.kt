@@ -1,6 +1,7 @@
 package com.konaire.currencycalculator.ui.list
 
 import android.support.v4.util.ArrayMap
+import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
 import android.view.ViewGroup
 
@@ -23,9 +24,18 @@ abstract class BaseAdapter<T>(
 
     override fun getItemCount(): Int = items.size
 
+    abstract fun getDiffCallback(oldItems: MutableList<T>, newItems: MutableList<T>): DiffUtil.Callback
+
     open fun reinit(data: MutableList<T>) {
+        val previousItems = items
+
         items = data
-        notifyDataSetChanged()
+        notifyOnlyItemsThatChanged(previousItems, data)
+    }
+
+    fun notifyOnlyItemsThatChanged(oldItems: MutableList<T> = items, newItems: MutableList<T> = items) {
+        val diffResult = DiffUtil.calculateDiff(getDiffCallback(oldItems, newItems))
+        diffResult.dispatchUpdatesTo(this)
     }
 
     fun isEmpty() = itemCount == 0

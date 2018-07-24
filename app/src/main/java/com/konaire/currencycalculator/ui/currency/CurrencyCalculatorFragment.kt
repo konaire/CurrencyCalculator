@@ -88,6 +88,11 @@ class CurrencyCalculatorFragment: BaseFragment(), CurrencyCalculatorView {
         presenter.stopSubscriptions()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        list.adapter = null
+    }
+
     override fun getTitle(): String = getString(R.string.app_name)
 
     override fun getFragmentTag(): String = TAG
@@ -104,13 +109,11 @@ class CurrencyCalculatorFragment: BaseFragment(), CurrencyCalculatorView {
 
     override fun showData(data: MutableList<Currency>) {
         if (data.isNotEmpty()) {
-            if (adapter?.baseCurrency == null) {
-                adapter?.baseCurrency = data[0]
-            } else if (adapter?.getFirstItem()?.name != data[0].name) {
+            if (adapter?.getTopItem()?.name != data[0].name) {
                 list.scrollToPosition(0)
             }
 
-            adapter?.updateRates(data)
+            adapter?.reinit(data)
             emptyView?.visibility = View.GONE
         } else {
             emptyView?.visibility = View.VISIBLE

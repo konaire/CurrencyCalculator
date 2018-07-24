@@ -1,5 +1,6 @@
 package com.konaire.currencycalculator.ui.currency.adapters
 
+import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
 
 import com.konaire.currencycalculator.models.Currency
@@ -7,8 +8,9 @@ import com.konaire.currencycalculator.ui.list.BaseAdapter
 import com.konaire.currencycalculator.ui.list.ListItemType
 import com.konaire.currencycalculator.ui.list.OnItemClickedListener
 import com.konaire.currencycalculator.util.OnValueChangedListener
-import io.reactivex.android.schedulers.AndroidSchedulers
 
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.PublishSubject
 
 import java.util.concurrent.TimeUnit
@@ -20,67 +22,52 @@ class CurrencyAdapter(
     clickListener: OnItemClickedListener<Currency>
 ): BaseAdapter<Currency>(clickListener), OnValueChangedListener<Currency> {
     private val subject: PublishSubject<Currency> = PublishSubject.create()
-    var baseCurrency: Currency? = null
+    private var subscription: Disposable? = null
+    lateinit var baseCurrency: Currency
 
     init {
         delegateAdapters[ListItemType.CURRENCY.ordinal] = CurrencyDelegateAdapter(clickListener, this)
+    }
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
         subscribeToSubject()
+    }
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView)
+        subscription?.dispose()
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val adapter = delegateAdapters[getItemViewType(position)]
         if (adapter is CurrencyDelegateAdapter) {
-            adapter.baseCurrency = baseCurrency!!
+            adapter.baseCurrency = baseCurrency
         }
 
         super.onBindViewHolder(holder, position)
+    }
+
+    override fun getDiffCallback(oldItems: MutableList<Currency>, newItems: MutableList<Currency>): DiffUtil.Callback = object: DiffUtil.Callback() {
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean = oldItems[oldItemPosition].name == newItems[newItemPosition].name
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean = newItems[newItemPosition].name == baseCurrency.name
+
+        override fun getOldListSize(): Int = oldItems.size
+
+        override fun getNewListSize(): Int = newItems.size
+    }
+
+    override fun reinit(data: MutableList<Currency>) {
+        updateBaseCurrencyRate(data)
+        super.reinit(data)
     }
 
     override fun onValueChanged(value: Currency) {
         subject.onNext(value)
     }
 
-    fun getFirstItem(): Currency = items[0]
-
-    fun updateRates(data: MutableList<Currency>) {
-        if (isEmpty()) {
-            reinit(data)
-            return
-        }
-
-        var index = 0
-        while (index < items.size && index < data.size) {
-            if (items[index].name == data[index].name) {
-                items[index].rate = data[index].rate
-                if (items[index] != baseCurrency) {
-                    notifyItemChanged(index)
-                }
-
-                index++
-            } else if (index == 0 && data[index].name == baseCurrency?.name) { // base currency was updated
-                items[index] = data[index]
-                notifyItemChanged(index)
-            } else if (items[index].name > data[index].name) { // data has a new currency
-                items.add(index, data[index])
-                notifyItemInserted(index)
-            } else { // data has no such currency
-                items.removeAt(index)
-                notifyItemRemoved(index)
-            }
-        }
-
-        while (index < data.size) {
-            items.add(data[index])
-            notifyItemInserted(index)
-
-            index++
-        }
-
-        while (index < items.size) {
-            items.removeAt(index)
-            notifyItemRemoved(index)
-        }
-    }
+    fun getTopItem(): Currency? = if (items.isNotEmpty()) items[0] else null
 
     fun updateBaseCurrency(currency: Currency) {
         val index = items.indexOf(currency)
@@ -95,29 +82,25 @@ class CurrencyAdapter(
         notifyItemRemoved(index)
     }
 
-    private fun notifyAllItemsExcept(currency: Currency) {
-        val firstIndex = 0
-        val lastIndex = itemCount - 1
-        val index = items.indexOf(currency)
-        if (index < firstIndex) {
-            return
-        }
+    private fun updateBaseCurrencyRate(data: MutableList<Currency>) {
+        try {
+            val index = data.indexOfFirst { item -> item.name == baseCurrency.name }
+            if (index <= 0) {
+                return
+            }
 
-        if (index > firstIndex) {
-            notifyItemRangeChanged(firstIndex, index)
-        }
-
-        if (index < lastIndex) {
-            notifyItemRangeChanged(index + 1, lastIndex - index)
+            baseCurrency.rate = data[index].rate
+        } catch (e: UninitializedPropertyAccessException) {
+            baseCurrency = data[0]
         }
     }
 
     private fun subscribeToSubject() {
-        subject.debounce(500, TimeUnit.MILLISECONDS)
+        subscription = subject.debounce(500, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { currency ->
                 baseCurrency = currency
-                notifyAllItemsExcept(currency)
+                notifyOnlyItemsThatChanged()
             }
     }
 }

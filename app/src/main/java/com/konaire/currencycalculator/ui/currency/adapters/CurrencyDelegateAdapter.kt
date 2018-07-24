@@ -42,18 +42,11 @@ class CurrencyDelegateAdapter(
             val value = findViewById<TextView>(R.id.value)
 
             textWatcher.value = currency
-            if (baseCurrency.value >= 0) {
-                value.text = context.getString(
-                    R.string.currency_value_format,
-                    currency.rate * baseCurrency.value / baseCurrency.rate
-                )
-            } else {
-                value.text = ""
-            }
 
-            flag.text = currency.currencyInfo.flag
             name.text = currency.name
-            description.text = context.getString(currency.currencyInfo.descriptionRes)
+            flag.text = currency.getFlag()
+            description.text = currency.getDescription(context)
+            value.text = currency.calculateValue(context, baseCurrency)
 
             setOnClickListener { clickListener.onItemClicked(currency, this) }
         }
@@ -87,7 +80,7 @@ class CurrencyDelegateAdapter(
 
             try {
                 currency.value = str.toString().toFloat()
-                if (currency == baseCurrency) {
+                if (currency.name == baseCurrency.name) {
                     valueChangedListener.onValueChanged(currency)
                 }
             } catch (e: NumberFormatException) {

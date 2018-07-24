@@ -1,5 +1,7 @@
 package com.konaire.currencycalculator.models
 
+import android.content.Context
+
 import com.konaire.currencycalculator.R
 import com.konaire.currencycalculator.ui.list.ListItemType
 import com.konaire.currencycalculator.ui.list.ViewType
@@ -52,12 +54,25 @@ data class Currency(
     var rate: Float = 1F,
     var value: Float = -1F
 ): ViewType {
-    val currencyInfo: CurrencyInfo
+    private val currencyInfo: CurrencyInfo
         get() = try {
             CurrencyInfo.valueOf(name)
         } catch (e: Exception) {
             CurrencyInfo.UNKNOWN
         }
+
+    fun getFlag(): String = currencyInfo.flag
+
+    fun getDescription(context: Context): String = context.getString(currencyInfo.descriptionRes)
+
+    fun calculateValue(context: Context, baseCurrency: Currency): String = if (baseCurrency.value >= 0) {
+        context.getString(
+            R.string.currency_value_format,
+            rate * baseCurrency.value / baseCurrency.rate
+        )
+    } else {
+        ""
+    }
 
     override fun getViewType(): Int = ListItemType.CURRENCY.ordinal
 }
